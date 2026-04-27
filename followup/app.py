@@ -57,7 +57,12 @@ def gerar_link_mailto(email, pedido, mensagem):
 
 if arquivo:
 
-    df = pd.read_excel(arquivo, engine="openpyxl")
+    if arquivo is not None:
+
+    try:
+        df = pd.read_excel(arquivo, engine="openpyxl")
+    except:
+        df = pd.read_excel(arquivo, engine="xlrd")
 
     st.sidebar.title("Filtros")
 
