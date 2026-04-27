@@ -54,7 +54,15 @@ def gerar_link_mailto(email, pedido, mensagem):
 
 if arquivo:
 
-    df = pd.read_excel(arquivo, engine="openpyxl")
+    try:
+        df = pd.read_excel(arquivo, engine="openpyxl")
+    except:
+        arquivo.seek(0)
+        try:
+            df = pd.read_excel(arquivo, engine="xlrd")
+        except:
+            st.error("Arquivo inválido. Use .xlsx ou .xls")
+            st.stop()
 
     st.sidebar.title("Filtros")
 
