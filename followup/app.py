@@ -59,10 +59,10 @@ if arquivo:
 
     if arquivo is not None:
 
-    try:
-        df = pd.read_excel(arquivo, engine="openpyxl")
-    except:
-        df = pd.read_excel(arquivo, engine="xlrd")
+        try:
+            df = pd.read_excel(arquivo, engine="openpyxl")
+        except:
+            df = pd.read_excel(arquivo, engine="xlrd")
 
     st.sidebar.title("Filtros")
 
