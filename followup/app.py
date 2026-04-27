@@ -4,10 +4,7 @@ from datetime import datetime
 from io import BytesIO
 import urllib.parse
 
-st.set_page_config(
-    page_title="Follow-up Compras",
-    layout="wide"
-)
+st.set_page_config(page_title="Follow-up Compras", layout="wide")
 
 st.title("📦 Dashboard Follow-up de Compras")
 
@@ -57,23 +54,16 @@ def gerar_link_mailto(email, pedido, mensagem):
 
 if arquivo:
 
-    if arquivo is not None:
-
-        try:
-            df = pd.read_excel(arquivo, engine="openpyxl")
-        except:
-            df = pd.read_excel(arquivo, engine="xlrd")
+    df = pd.read_excel(arquivo, engine="openpyxl")
 
     st.sidebar.title("Filtros")
 
-    # 🔹 Filtro comprador
     comprador = st.sidebar.selectbox(
         "Selecionar comprador",
         df["COMPRADOR"].dropna().unique()
     )
     df = df[df["COMPRADOR"] == comprador]
 
-    # 🔹 Filtro fornecedor
     fornecedor_filtro = st.sidebar.selectbox(
         "Fornecedor",
         ["Todos"] + sorted(df["FORNECEDOR"].dropna().unique())
@@ -81,7 +71,14 @@ if arquivo:
     if fornecedor_filtro != "Todos":
         df = df[df["FORNECEDOR"] == fornecedor_filtro]
 
-    # 🔹 🔥 NOVO: Filtro por OC (dropdown)
+    if "EMPRESA" in df.columns:
+        empresa_filtro = st.sidebar.selectbox(
+            "Empresa",
+            ["Todas"] + sorted(df["EMPRESA"].dropna().astype(str).unique())
+        )
+        if empresa_filtro != "Todas":
+            df = df[df["EMPRESA"].astype(str) == empresa_filtro]
+
     oc_filtro = st.sidebar.selectbox(
         "Ordem de Compra (OC)",
         ["Todas"] + sorted(df["OC"].dropna().astype(str).unique())
@@ -89,12 +86,10 @@ if arquivo:
     if oc_filtro != "Todas":
         df = df[df["OC"].astype(str) == oc_filtro]
 
-    # 🔹 🔥 EXTRA: Busca por OC (mais rápido)
     oc_busca = st.sidebar.text_input("Buscar OC (parcial)")
     if oc_busca:
         df = df[df["OC"].astype(str).str.contains(oc_busca)]
 
-    # 🔹 Datas e atraso
     df["DATA_NECESSIDADE"] = pd.to_datetime(
         df["DATA_NECESSIDADE"],
         errors="coerce"
@@ -103,20 +98,12 @@ if arquivo:
     hoje = datetime.today()
     df["dias_atraso"] = (hoje - df["DATA_NECESSIDADE"]).dt.days
 
-    # 🔹 Métricas
     col1, col2, col3 = st.columns(3)
 
     col1.metric("Total de pedidos", len(df))
-    col2.metric(
-        "Pedidos atrasados (>10 dias)",
-        len(df[df["dias_atraso"] > 10])
-    )
-    col3.metric(
-        "Pedidos críticos (>20 dias)",
-        len(df[df["dias_atraso"] > 20])
-    )
+    col2.metric("Pedidos atrasados (>10 dias)", len(df[df["dias_atraso"] > 10]))
+    col3.metric("Pedidos críticos (>20 dias)", len(df[df["dias_atraso"] > 20]))
 
-    # 🔹 Ranking fornecedor
     st.subheader("📊 Ranking de atrasos por fornecedor")
 
     ranking = (
@@ -127,18 +114,16 @@ if arquivo:
 
     st.bar_chart(ranking)
 
-    # 🔹 Tabela
     st.subheader("📋 Pedidos")
 
     df = df.sort_values("dias_atraso", ascending=False)
     st.dataframe(df)
 
-    # 🔹 Emails
     st.subheader("📧 Follow-up por Email")
 
     for index, row in df.iterrows():
 
-        col1, col2, col3 = st.columns([4,1,1])
+        col1, col2, col3 = st.columns([4, 1, 1])
 
         col1.write(
             f"{row['FORNECEDOR']} | {row['EMAIL']} | "
@@ -190,7 +175,6 @@ Assunto: Follow-up Pedido {row['OC']}
                 key=f"copy_email_{index}"
             )
 
-    # 🔹 Download
     excel = gerar_excel(df)
 
     st.download_button(
