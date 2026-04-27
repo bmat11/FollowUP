@@ -167,7 +167,7 @@ if arquivo:
             )
 
             st.markdown(f"👉 [Abrir no Outlook Web]({link_outlook})")
-            st.markdown(f"👉 [Abrir via Email padrão (fallback)]({link_mailto})")
+
 
             texto_email = f"""
 Para: {row['EMAIL']}
